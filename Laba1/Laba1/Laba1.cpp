@@ -5,20 +5,18 @@
 #include <vector>
 #include <string>
 #include <chrono>
-#include <Windows.h> // Для Sleep() або використання std::this_thread::sleep_for
+#include <Windows.h> 
 
 using namespace std;
 
-// ==========================================
-// ГЛОБАЛЬНІ ЗМІННІ ДЛЯ ПОПЕРЕДНІХ ПУНКТІВ
-// ==========================================
+
 list<int> global_list;
 mutex mtx_global;
 
 
-// ==========================================
-// 1.2.1 та 1.2.2: Прості потоки та detach
-// ==========================================
+
+// 1.2.1 ГІГ  1.2.2: ГЏГ°Г®Г±ГІВі ГЇГ®ГІГ®ГЄГЁ ГІГ  detach
+
 void Thread1_Func() {
     cout << "Thread 1 output: 1\n";
 }
@@ -32,17 +30,17 @@ void RunDemo_1_2_1_and_1_2_2() {
     thread t1(Thread1_Func);
     thread t2(Thread2_Func);
 
-    // Використовуємо detach, як вимагається у пункті 1.2.2
+    
     t1.detach();
     t2.detach();
 
-    this_thread::sleep_for(chrono::milliseconds(50)); // Чекаємо виводу
+    this_thread::sleep_for(chrono::milliseconds(50)); 
 }
 
 
-// ==========================================
-// 1.2.3 та 1.2.4: Список із м'ютексом і без
-// ==========================================
+
+// 1.2.3 ГІГ  1.2.4: Г‘ГЇГЁГ±Г®ГЄ ВіГ§ Г¬'ГѕГІГҐГЄГ±Г®Г¬ Ві ГЎГҐГ§
+
 void AddToList_Unsafe(int start_val) {
     global_list.push_back(start_val);
     cout << "[Unsafe] Added: " << start_val << endl;
@@ -64,7 +62,7 @@ void ListContains_Unsafe(int target_val) {
     }
 }
 
-// Захищена м'ютексом версія (1.2.4)
+// Г‡Г ГµГЁГ№ГҐГ­Г  Г¬'ГѕГІГҐГЄГ±Г®Г¬ ГўГҐГ°Г±ВіГї (1.2.4)
 void AddToList_Safe(int start_val) {
     mtx_global.lock();
     global_list.push_back(start_val);
@@ -98,7 +96,7 @@ void RunDemo_1_2_3_to_1_2_5() {
     cout << "\n=== DEMO 1.2.3 - 1.2.5 (List & Mutex / Lock_Guard) ===\n";
     global_list.clear();
 
-    // Демонстрація безпечного варіанту з lock_guard (пункт 1.2.5)
+    // Г„ГҐГ¬Г®Г­Г±ГІГ°Г Г¶ВіГї ГЎГҐГ§ГЇГҐГ·Г­Г®ГЈГ® ГўГ Г°ВіГ Г­ГІГі Г§ lock_guard (ГЇГіГ­ГЄГІ 1.2.5)
     auto Add_LockGuard = [](int val) {
         lock_guard<mutex> lock(mtx_global);
         global_list.push_back(val);
@@ -124,9 +122,9 @@ void RunDemo_1_2_3_to_1_2_5() {
 }
 
 
-// ==========================================
-// 1.2.6 та 1.2.7: Клас someData, exchangePerson
-// ==========================================
+
+// 1.2.6 ГІГ  1.2.7: ГЉГ«Г Г± someData, exchangePerson
+
 struct someData {
     string name;
     string surname;
@@ -163,21 +161,21 @@ public:
         person.data.age = 1;
     }
 
-    // Метод Swap із застосуванням unique_lock та defer_lock (згідно з пунктом 1.2.7)
+    // ГЊГҐГІГ®Г¤ Swap ВіГ§ Г§Г Г±ГІГ®Г±ГіГўГ Г­Г­ГїГ¬ unique_lock ГІГ  defer_lock (Г§ГЈВіГ¤Г­Г® Г§ ГЇГіГ­ГЄГІГ®Г¬ 1.2.7)
     static void Swap(exchangePerson& p1, exchangePerson& p2) {
         if (&p1 == &p2) {
             cout << "Error: Cannot swap object with itself!\n";
             return;
         }
 
-        // Використовуємо unique_lock з defer_lock (вимога п. 1.2.7)
+        // Г‚ГЁГЄГ®Г°ГЁГ±ГІГ®ГўГіВєГ¬Г® unique_lock Г§ defer_lock (ГўГЁГ¬Г®ГЈГ  ГЇ. 1.2.7)
         unique_lock<mutex> lock1(p1.mtx, defer_lock);
         unique_lock<mutex> lock2(p2.mtx, defer_lock);
 
-        // Безпечне блокування обох м'ютексів без взаємного блокування (deadlock)
+        // ГЃГҐГ§ГЇГҐГ·Г­ГҐ ГЎГ«Г®ГЄГіГўГ Г­Г­Гї Г®ГЎГ®Гµ Г¬'ГѕГІГҐГЄГ±ВіГў ГЎГҐГ§ ГўГ§Г ВєГ¬Г­Г®ГЈГ® ГЎГ«Г®ГЄГіГўГ Г­Г­Гї (deadlock)
         std::lock(lock1, lock2);
 
-        // Обмін даними
+        // ГЋГЎГ¬ВіГ­ Г¤Г Г­ГЁГ¬ГЁ
         someData temp = p1.data;
         p1.data = p2.data;
         p2.data = temp;
@@ -200,7 +198,7 @@ void RunDemo_1_2_6_and_1_2_7() {
     person1.printData("Person 1");
     person2.printData("Person 2");
 
-    // Запуск JohnDoe та JacobSmith в окремих потоках з від'єднанням (detach)
+    // Г‡Г ГЇГіГ±ГЄ JohnDoe ГІГ  JacobSmith Гў Г®ГЄГ°ГҐГ¬ГЁГµ ГЇГ®ГІГ®ГЄГ Гµ Г§ ГўВіГ¤'ВєГ¤Г­Г Г­Г­ГїГ¬ (detach)
     thread t1(exchangePerson::JohnDoe, ref(person1));
     thread t2(exchangePerson::JacobSmith, ref(person2));
     t1.detach();
@@ -212,9 +210,9 @@ void RunDemo_1_2_6_and_1_2_7() {
     person1.printData("Person 1");
     person2.printData("Person 2");
 
-    // Запуск Swap в окремому потоці з очікуванням завершення (join)
+    // Г‡Г ГЇГіГ±ГЄ Swap Гў Г®ГЄГ°ГҐГ¬Г®Г¬Гі ГЇГ®ГІГ®Г¶Ві Г§ Г®Г·ВіГЄГіГўГ Г­Г­ГїГ¬ Г§Г ГўГҐГ°ГёГҐГ­Г­Гї (join)
     thread tSwap(exchangePerson::Swap, ref(person1), ref(person2));
-    tSwap.join(); // Гарантуємо отримання результатів до завершення головного потоку
+    tSwap.join(); 
 
     cout << "\n[After Swap operation]:\n";
     person1.printData("Person 1");
@@ -222,16 +220,16 @@ void RunDemo_1_2_6_and_1_2_7() {
 }
 
 
-// ==========================================
-// ГОЛОВНА ФУНКЦІЯ MAIN
-// ==========================================
+
+// ГѓГЋГ‹ГЋГ‚ГЌГЂ Г”Г“ГЌГЉГ–ВІГџ MAIN
+
 int main() {
-    // Налаштування української локалі для коректного виводу в консоль
+    // ГЌГ Г«Г ГёГІГіГўГ Г­Г­Гї ГіГЄГ°Г ВїГ­Г±ГјГЄГ®Вї Г«Г®ГЄГ Г«Ві Г¤Г«Гї ГЄГ®Г°ГҐГЄГІГ­Г®ГЈГ® ГўГЁГўГ®Г¤Гі Гў ГЄГ®Г­Г±Г®Г«Гј
     system("chcp 65001 > nul");
 
     cout << "LABORATORY WORK #1 STARTING...\n";
 
-    // Послідовний виклик усіх демонстрацій лабораторної роботи
+    // ГЏГ®Г±Г«ВіГ¤Г®ГўГ­ГЁГ© ГўГЁГЄГ«ГЁГЄ ГіГ±ВіГµ Г¤ГҐГ¬Г®Г­Г±ГІГ°Г Г¶ВіГ© Г«Г ГЎГ®Г°Г ГІГ®Г°Г­Г®Вї Г°Г®ГЎГ®ГІГЁ
     RunDemo_1_2_1_and_1_2_2();
     RunDemo_1_2_3_to_1_2_5();
     RunDemo_1_2_6_and_1_2_7();
